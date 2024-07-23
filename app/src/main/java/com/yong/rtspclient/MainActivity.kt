@@ -12,10 +12,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.alexvas.rtsp.RtspClient
 import com.alexvas.rtsp.widget.RtspSurfaceView
+import com.alexvas.utils.NetUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.net.ssl.SSLSocket
 
 class MainActivity : AppCompatActivity() {
     private val LOG_TAG = "RTSP Client"
@@ -25,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     private var btnStartView: Button? = null
     private var btnStopView: Button? = null
     private var rtspInput: EditText? = null
+    private var rtspClient: RtspClient? = null
+    private var rtspSocket: SSLSocket? = null
     private var rtspView: RtspSurfaceView? = null
 
     private var isRtspListenerPlaying = AtomicBoolean(false)
@@ -60,7 +64,13 @@ class MainActivity : AppCompatActivity() {
 
             val rtspUrl = getRtspUrl()
             CoroutineScope(Dispatchers.IO).launch {
-
+                val isRtspRunning = AtomicBoolean(false)
+                val rtspUri = Uri.parse(rtspUrl)
+                rtspSocket = NetUtils.createSslSocketAndConnect(rtspUri.host!!, rtspUri.port, 10000)
+                rtspClient = RtspClient.Builder(rtspSocket!!, rtspUri.toString(), isRtspRunning, RtspClientListener())
+                    .requestVideo(true)
+                    .build()
+                rtspClient!!.execute()
             }
 
             Log.i(LOG_TAG, "RTSP Listener Started from $rtspUrl")
@@ -72,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(LOG_TAG, "RTSP Listener Stopping")
             isRtspListenerPlaying.set(false)
 
+            NetUtils.closeSocket(rtspSocket)
             Log.i(LOG_TAG, "RTSP Listener Stopped")
         }
     }
