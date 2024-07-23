@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(LOG_TAG, "RTSP Connected")
         }
 
-        override fun onRtspVideoNalUnitReceived(pdata: ByteArray, offset: Int, length: Int, timestamp: Long) {
+        override fun onRtspVideoNalUnitReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
             Log.i(LOG_TAG, "RTSP Video Nal Received")
         }
 
