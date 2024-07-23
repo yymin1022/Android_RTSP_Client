@@ -19,8 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MainActivity : AppCompatActivity() {
     private val LOG_TAG = "RTSP Client"
 
-    private var btnStart: Button? = null
-    private var btnStop: Button? = null
+    private var btnStartListener: Button? = null
+    private var btnStopListener: Button? = null
+    private var btnStartView: Button? = null
+    private var btnStopView: Button? = null
     private var rtspInput: EditText? = null
     private var rtspView: RtspSurfaceView? = null
 
@@ -36,16 +38,20 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        btnStart = findViewById(R.id.main_btn_start_view)
-        btnStop = findViewById(R.id.main_btn_stop_view)
+        btnStartListener = findViewById(R.id.main_btn_start_listener)
+        btnStopListener = findViewById(R.id.main_btn_stop_listener)
+        btnStartView = findViewById(R.id.main_btn_start_view)
+        btnStopView = findViewById(R.id.main_btn_stop_view)
         rtspInput = findViewById(R.id.main_input_rtsp)
         rtspView = findViewById(R.id.main_surface_rtsp)
 
-        btnStart!!.setOnClickListener(btnListener)
-        btnStop!!.setOnClickListener(btnListener)
+        btnStartListener!!.setOnClickListener(btnListener)
+        btnStopListener!!.setOnClickListener(btnListener)
+        btnStartView!!.setOnClickListener(btnListener)
+        btnStopView!!.setOnClickListener(btnListener)
     }
 
-    private fun startRTSP() {
+    private fun startRtspView() {
         if(!isRtspPlaying.get()) {
             Log.i(LOG_TAG, "RTSP Starting")
             isRtspPlaying.set(true)
@@ -62,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun stopRTSP() {
+    private fun stopRtspView() {
         if(isRtspPlaying.get()) {
             Log.i(LOG_TAG, "RTSP Stopping")
             isRtspPlaying.set(false)
@@ -79,8 +85,10 @@ class MainActivity : AppCompatActivity() {
 
     private val btnListener = View.OnClickListener {
         when(it.id) {
-            R.id.main_btn_start_view -> startRTSP()
-            R.id.main_btn_stop_view -> stopRTSP()
+            R.id.main_btn_start_listener -> {}
+            R.id.main_btn_stop_listener -> {}
+            R.id.main_btn_start_view -> startRtspView()
+            R.id.main_btn_stop_view -> stopRtspView()
         }
     }
 
