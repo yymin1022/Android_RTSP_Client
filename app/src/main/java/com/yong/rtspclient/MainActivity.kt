@@ -1,10 +1,8 @@
 package com.yong.rtspclient
 
-import android.graphics.Bitmap
-import android.media.Image
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.SurfaceView
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -12,11 +10,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import ir.am3n.rtsp.client.Rtsp
-import ir.am3n.rtsp.client.data.Frame
-import ir.am3n.rtsp.client.data.SdpInfo
-import ir.am3n.rtsp.client.interfaces.RtspFrameListener
-import ir.am3n.rtsp.client.interfaces.RtspStatusListener
+import com.alexvas.rtsp.widget.RtspSurfaceView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity() {
     private val LOG_TAG = "RTSP Client"
@@ -24,10 +22,9 @@ class MainActivity : AppCompatActivity() {
     private var btnStart: Button? = null
     private var btnStop: Button? = null
     private var rtspInput: EditText? = null
-    private var rtspView: SurfaceView? = null
+    private var rtspView: RtspSurfaceView? = null
 
-    private var isRtspPlaying = false
-    private var rtspObject: Rtsp? = null
+    private var isRtspPlaying = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,29 +46,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startRTSP() {
-        if(!isRtspPlaying) {
+        if(!isRtspPlaying.get()) {
             Log.i(LOG_TAG, "RTSP Starting")
-            isRtspPlaying = true
+            isRtspPlaying.set(true)
 
             val rtspUrl = getRtspUrl()
-            rtspObject = Rtsp()
-            rtspObject!!.init(rtspUrl, null, null)
-            rtspObject!!.setFrameListener(RtspListenerFrame())
-            rtspObject!!.setStatusListener(RtspListenerStatus())
-            rtspObject!!.setSurfaceView(rtspView)
-            rtspObject!!.start()
-            Log.i(LOG_TAG, "RTSP Started from ${rtspUrl}")
+            CoroutineScope(Dispatchers.IO).launch {
+                rtspView!!.init(Uri.parse(rtspUrl), null, null)
+                rtspView!!.setStatusListener(RtspClientListener())
+                rtspView!!.start(requestVideo = true, requestAudio = false)
+            }
+
+            Log.i(LOG_TAG, "RTSP Started from $rtspUrl")
         }
 
     }
 
     private fun stopRTSP() {
-        if(isRtspPlaying) {
+        if(isRtspPlaying.get()) {
             Log.i(LOG_TAG, "RTSP Stopping")
-            isRtspPlaying = false
+            isRtspPlaying.set(false)
 
-            rtspObject!!.stop()
-            rtspObject = null
+            rtspView!!.stop()
             Log.i(LOG_TAG, "RTSP Stopped")
         }
     }
@@ -88,41 +84,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    inner class RtspListenerFrame: RtspFrameListener {
-        override fun onAudioSampleReceived(frame: Frame?) {
-            Log.i(LOG_TAG, "RTSP Audio Received")
+    inner class RtspClientListener: RtspSurfaceView.RtspStatusListener {
+        override fun onRtspFirstFrameRendered() {
+            Log.i(LOG_TAG, "RTSP Render Started")
         }
 
-        override fun onVideoFrameReceived(
-            width: Int,
-            height: Int,
-            mediaImage: Image?,
-            yuv420Bytes: ByteArray?,
-            bitmap: Bitmap?
-        ) {
-            Log.i(LOG_TAG, "RTSP Video Received")
-        }
-
-        override fun onVideoNalUnitReceived(frame: Frame?) {
-            Log.i(LOG_TAG, "RTSP Video Nal Received")
-        }
-    }
-
-    inner class RtspListenerStatus: RtspStatusListener {
-        override fun onConnecting() {
-            Log.i(LOG_TAG, "RTSP Connecting")
-        }
-        override fun onConnected(sdpInfo: SdpInfo) {
+        override fun onRtspStatusConnected() {
             Log.i(LOG_TAG, "RTSP Connected")
         }
-        override fun onDisconnected() {
+
+        override fun onRtspStatusConnecting() {
+            Log.i(LOG_TAG, "RTSP Connecting")
+        }
+
+        override fun onRtspStatusDisconnected() {
             Log.i(LOG_TAG, "RTSP Disconnected")
         }
-        override fun onUnauthorized() {
-            Log.i(LOG_TAG, "RTSP Unauthorized")
-        }
-        override fun onFailed(message: String?) {
+
+        override fun onRtspStatusFailed(message: String?) {
             Log.e(LOG_TAG, "RTSP Failed: $message")
+        }
+
+        override fun onRtspStatusFailedUnauthorized() {
+            Log.e(LOG_TAG, "RTSP Unauthorized")
         }
     }
 }
