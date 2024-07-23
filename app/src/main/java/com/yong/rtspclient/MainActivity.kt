@@ -132,15 +132,15 @@ class MainActivity : AppCompatActivity() {
             Log.i(LOG_TAG, "RTSP Connecting")
         }
 
-        override fun onRtspConnected(p0: RtspClient.SdpInfo) {
+        override fun onRtspConnected(sdpInfo: RtspClient.SdpInfo) {
             Log.i(LOG_TAG, "RTSP Connected")
         }
 
-        override fun onRtspVideoNalUnitReceived(p0: ByteArray, p1: Int, p2: Int, p3: Long) {
+        override fun onRtspVideoNalUnitReceived(pdata: ByteArray, offset: Int, length: Int, timestamp: Long) {
             Log.i(LOG_TAG, "RTSP Video Nal Received")
         }
 
-        override fun onRtspAudioSampleReceived(p0: ByteArray, p1: Int, p2: Int, p3: Long) {
+        override fun onRtspAudioSampleReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
             Log.i(LOG_TAG, "RTSP Audio Sample Received")
         }
 
