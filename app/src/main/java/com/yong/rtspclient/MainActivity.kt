@@ -16,8 +16,8 @@ import com.alexvas.utils.NetUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.net.ssl.SSLSocket
 
 class MainActivity : AppCompatActivity() {
     private val LOG_TAG = "RTSP Client"
@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private var btnStopView: Button? = null
     private var rtspInput: EditText? = null
     private var rtspClient: RtspClient? = null
-    private var rtspSocket: SSLSocket? = null
+    private var rtspSocket: Socket? = null
     private var rtspView: RtspSurfaceView? = null
 
     private var isRtspListenerPlaying = AtomicBoolean(false)
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.IO).launch {
                 val isRtspRunning = AtomicBoolean(false)
                 val rtspUri = Uri.parse(rtspUrl)
-                rtspSocket = NetUtils.createSslSocketAndConnect(rtspUri.host!!, rtspUri.port, 10000)
+                rtspSocket = NetUtils.createSocketAndConnect(rtspUri.host!!, rtspUri.port, 10000)
                 rtspClient = RtspClient.Builder(rtspSocket!!, rtspUri.toString(), isRtspRunning, RtspClientListener())
                     .requestVideo(true)
                     .build()
