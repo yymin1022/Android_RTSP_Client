@@ -26,7 +26,8 @@ class MainActivity : AppCompatActivity() {
     private var rtspInput: EditText? = null
     private var rtspView: RtspSurfaceView? = null
 
-    private var isRtspPlaying = AtomicBoolean(false)
+    private var isRtspListenerPlaying = AtomicBoolean(false)
+    private var isRtspViewPlaying = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,10 +52,33 @@ class MainActivity : AppCompatActivity() {
         btnStopView!!.setOnClickListener(btnListener)
     }
 
+    private fun startRtspListener() {
+        if(!isRtspListenerPlaying.get() && !isRtspViewPlaying.get()) {
+            Log.i(LOG_TAG, "RTSP Listener Starting")
+            isRtspListenerPlaying.set(true)
+
+            val rtspUrl = getRtspUrl()
+            CoroutineScope(Dispatchers.IO).launch {
+                
+            }
+
+            Log.i(LOG_TAG, "RTSP Listener Started from $rtspUrl")
+        }
+    }
+
+    private fun stopRtspListener() {
+        if(isRtspListenerPlaying.get()) {
+            Log.i(LOG_TAG, "RTSP Listener Stopping")
+            isRtspListenerPlaying.set(false)
+
+            Log.i(LOG_TAG, "RTSP Listener Stopped")
+        }
+    }
+
     private fun startRtspView() {
-        if(!isRtspPlaying.get()) {
-            Log.i(LOG_TAG, "RTSP Starting")
-            isRtspPlaying.set(true)
+        if(!isRtspListenerPlaying.get() && !isRtspViewPlaying.get()) {
+            Log.i(LOG_TAG, "RTSP View Starting")
+            isRtspViewPlaying.set(true)
 
             val rtspUrl = getRtspUrl()
             CoroutineScope(Dispatchers.IO).launch {
@@ -63,18 +87,17 @@ class MainActivity : AppCompatActivity() {
                 rtspView!!.start(requestVideo = true, requestAudio = false)
             }
 
-            Log.i(LOG_TAG, "RTSP Started from $rtspUrl")
+            Log.i(LOG_TAG, "RTSP View Started from $rtspUrl")
         }
-
     }
 
     private fun stopRtspView() {
-        if(isRtspPlaying.get()) {
-            Log.i(LOG_TAG, "RTSP Stopping")
-            isRtspPlaying.set(false)
+        if(isRtspViewPlaying.get()) {
+            Log.i(LOG_TAG, "RTSP View Stopping")
+            isRtspViewPlaying.set(false)
 
             rtspView!!.stop()
-            Log.i(LOG_TAG, "RTSP Stopped")
+            Log.i(LOG_TAG, "RTSP View Stopped")
         }
     }
 
@@ -85,8 +108,8 @@ class MainActivity : AppCompatActivity() {
 
     private val btnListener = View.OnClickListener {
         when(it.id) {
-            R.id.main_btn_start_listener -> {}
-            R.id.main_btn_stop_listener -> {}
+            R.id.main_btn_start_listener -> startRtspListener()
+            R.id.main_btn_stop_listener -> stopRtspListener()
             R.id.main_btn_start_view -> startRtspView()
             R.id.main_btn_stop_view -> stopRtspView()
         }
