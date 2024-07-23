@@ -36,8 +36,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        btnStart = findViewById(R.id.main_btn_start)
-        btnStop = findViewById(R.id.main_btn_stop)
+        btnStart = findViewById(R.id.main_btn_start_view)
+        btnStop = findViewById(R.id.main_btn_stop_view)
         rtspInput = findViewById(R.id.main_input_rtsp)
         rtspView = findViewById(R.id.main_surface_rtsp)
 
@@ -79,8 +79,8 @@ class MainActivity : AppCompatActivity() {
 
     private val btnListener = View.OnClickListener {
         when(it.id) {
-            R.id.main_btn_start -> startRTSP()
-            R.id.main_btn_stop -> stopRTSP()
+            R.id.main_btn_start_view -> startRTSP()
+            R.id.main_btn_stop_view -> stopRTSP()
         }
     }
 
