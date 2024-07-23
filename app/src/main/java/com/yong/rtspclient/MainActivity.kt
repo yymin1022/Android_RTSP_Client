@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.alexvas.rtsp.RtspClient
 import com.alexvas.rtsp.widget.RtspSurfaceView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -113,6 +114,37 @@ class MainActivity : AppCompatActivity() {
             R.id.main_btn_start_view -> startRtspView()
             R.id.main_btn_stop_view -> stopRtspView()
         }
+    }
+
+    inner class RtspClientListener: RtspClient.RtspClientListener {
+        override fun onRtspConnecting() {
+            Log.i(LOG_TAG, "RTSP Connecting")
+        }
+
+        override fun onRtspConnected(p0: RtspClient.SdpInfo) {
+            Log.i(LOG_TAG, "RTSP Connected")
+        }
+
+        override fun onRtspVideoNalUnitReceived(p0: ByteArray, p1: Int, p2: Int, p3: Long) {
+            Log.i(LOG_TAG, "RTSP Video Nal Received")
+        }
+
+        override fun onRtspAudioSampleReceived(p0: ByteArray, p1: Int, p2: Int, p3: Long) {
+            Log.i(LOG_TAG, "RTSP Audio Sample Received")
+        }
+
+        override fun onRtspDisconnected() {
+            Log.i(LOG_TAG, "RTSP Disconnected")
+        }
+
+        override fun onRtspFailedUnauthorized() {
+            Log.e(LOG_TAG, "RTSP Unauthorized")
+        }
+
+        override fun onRtspFailed(message: String?) {
+            Log.e(LOG_TAG, "RTSP Failed: $message")
+        }
+
     }
 
     inner class RtspStatusListener: RtspSurfaceView.RtspStatusListener {
