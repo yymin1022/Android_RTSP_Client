@@ -31,9 +31,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start RTSP View"
-            android:id="@+id/main_btn_start"
+            android:id="@+id/main_btn_start_view"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/main_btn_stop"
+            app:layout_constraintEnd_toStartOf="@id/main_btn_stop_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/main_input_rtsp" />
 
@@ -41,11 +41,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Stop RTSP View"
-            android:id="@+id/main_btn_stop"
+            android:id="@+id/main_btn_stop_view"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/main_btn_start"
+            app:layout_constraintStart_toEndOf="@id/main_btn_start_view"
             app:layout_constraintTop_toBottomOf="@id/main_input_rtsp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start RTSP Listening"
+            android:id="@+id/main_btn_start_listener"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/main_btn_stop_listener"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/main_btn_start_view" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop RTSP Listening"
+            android:id="@+id/main_btn_stop_listener"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/main_btn_start_listener"
+            app:layout_constraintTop_toBottomOf="@id/main_btn_stop_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
