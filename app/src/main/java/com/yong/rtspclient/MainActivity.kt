@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
             val rtspUrl = getRtspUrl()
             CoroutineScope(Dispatchers.IO).launch {
-                
+
             }
 
             Log.i(LOG_TAG, "RTSP Listener Started from $rtspUrl")
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             val rtspUrl = getRtspUrl()
             CoroutineScope(Dispatchers.IO).launch {
                 rtspView!!.init(Uri.parse(rtspUrl), null, null)
-                rtspView!!.setStatusListener(RtspClientListener())
+                rtspView!!.setStatusListener(RtspStatusListener())
                 rtspView!!.start(requestVideo = true, requestAudio = false)
             }
 
@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    inner class RtspClientListener: RtspSurfaceView.RtspStatusListener {
+    inner class RtspStatusListener: RtspSurfaceView.RtspStatusListener {
         override fun onRtspFirstFrameRendered() {
             Log.i(LOG_TAG, "RTSP Render Started")
         }
