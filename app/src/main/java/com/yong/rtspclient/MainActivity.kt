@@ -242,13 +242,12 @@ class MainActivity : AppCompatActivity() {
                             videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
                             mediaMuxer!!.start()
                             isMuxerStarted = true
+                            Log.i(LOG_TAG, "Media Muxer Started")
                         } catch(e: IllegalArgumentException) {
                             Log.e(LOG_TAG, "Invalid Media Format [$mediaFormat]: $e")
                         } catch(e: IllegalStateException) {
                             Log.e(LOG_TAG, "Media Muxer is invalid: $e")
                         }
-
-                        Log.i(LOG_TAG, "Media Muxer Started")
                     }
 
                     outputBuffer?.position(videoBufferInfo.offset)
