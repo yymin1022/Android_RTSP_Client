@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         releaseMedia()
     }
 
@@ -210,9 +209,19 @@ class MainActivity : AppCompatActivity() {
                 if(videoBufferInfo.size != 0) {
                     if(!isMuxerStarted) {
                         val mediaFormat = mediaCodec!!.outputFormat
-                        videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
-                        mediaMuxer!!.start()
-                        isMuxerStarted = true
+                        Log.i(LOG_TAG, "Media Codec Format: $mediaFormat")
+
+                        try {
+                            videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
+                            Log.d(LOG_TAG, "Track Added to Muxer")
+                            mediaMuxer!!.start()
+                            isMuxerStarted = true
+                        } catch(e: IllegalArgumentException) {
+                            Log.e(LOG_TAG, "Invalid Media Format [$mediaFormat]: $e")
+                        } catch(e: IllegalStateException) {
+                            Log.e(LOG_TAG, "Media Muxer is invalid: $e")
+                        }
+
                         Log.i(LOG_TAG, "Media Muxer Started")
                     }
 
