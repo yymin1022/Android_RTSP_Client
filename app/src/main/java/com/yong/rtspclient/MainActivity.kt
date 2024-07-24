@@ -178,6 +178,14 @@ class MainActivity : AppCompatActivity() {
     private fun releaseMedia() {
         Log.i(LOG_TAG, "Closing Media Codec/Muxer")
 
+        try {
+            if(mediaCodec != null) {
+                mediaCodec?.signalEndOfInputStream()
+            }
+        } catch(e: IllegalStateException) {
+            Log.e(LOG_TAG, "Error signaling end of input stream: $e")
+        }
+
         mediaCodec!!.stop()
         mediaCodec!!.release()
         mediaCodec = null
@@ -187,6 +195,7 @@ class MainActivity : AppCompatActivity() {
             mediaMuxer!!.release()
         }
         mediaMuxer = null
+        isMuxerStarted = false
         videoTrackIndex = -1
         Log.i(LOG_TAG, "Closed Media Codec/Muxer")
     }
