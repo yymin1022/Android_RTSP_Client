@@ -1,6 +1,8 @@
 package com.yong.rtspclient
 
 import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.net.Uri
@@ -135,8 +137,33 @@ class MainActivity : AppCompatActivity() {
     private fun initMediaCodec() {
         Log.i(LOG_TAG, "Initializing Media Codec")
         val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 480, 480)
-        mediaCodec = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-        mediaCodec!!.configure(mediaFormat, null, null, 0)
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 125000)
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15)
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5)
+
+        val codecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
+        val codecInfos = codecList.codecInfos
+        var encoderName: String? = null
+        for(codecInfo in codecInfos) {
+            if(codecInfo.isEncoder) {
+                val supportedTypes = codecInfo.supportedTypes
+                for(type in supportedTypes) {
+                    if(type.equals(MediaFormat.MIMETYPE_VIDEO_AVC, ignoreCase = true)) {
+                        encoderName = codecInfo.name
+                        break
+                    }
+                }
+                if(encoderName != null) break
+            }
+        }
+
+        if(encoderName == null) {
+            throw RuntimeException("No suitable encoder found")
+        }
+
+        mediaCodec = MediaCodec.createByCodecName(encoderName)
+        mediaCodec!!.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         mediaCodec!!.start()
         Log.i(LOG_TAG, "Initialized Media Codec")
     }
@@ -154,6 +181,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun releaseMedia() {
         Log.i(LOG_TAG, "Closing Media Codec/Muxer")
+        mediaCodec!!.signalEndOfInputStream()
+
         mediaCodec!!.stop()
         mediaCodec!!.release()
 
@@ -227,7 +256,10 @@ class MainActivity : AppCompatActivity() {
 
                     outputBuffer?.position(videoBufferInfo.offset)
                     outputBuffer?.limit(videoBufferInfo.offset + videoBufferInfo.size)
-                    mediaMuxer!!.writeSampleData(videoTrackIndex, outputBuffer!!, videoBufferInfo)
+
+                    if(outputBuffer != null) {
+                        mediaMuxer!!.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo)
+                    }
                 }
 
                 mediaCodec!!.releaseOutputBuffer(outputBufferIndex, false)
