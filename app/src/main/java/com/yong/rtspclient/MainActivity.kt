@@ -242,7 +242,6 @@ class MainActivity : AppCompatActivity() {
 
                         try {
                             videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
-                            Log.d(LOG_TAG, "Track Added to Muxer")
                             mediaMuxer!!.start()
                             isMuxerStarted = true
                         } catch(e: IllegalArgumentException) {
