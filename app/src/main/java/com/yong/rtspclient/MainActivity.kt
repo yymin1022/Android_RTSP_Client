@@ -68,20 +68,15 @@ class MainActivity : AppCompatActivity() {
         btnStopListener!!.setOnClickListener(btnListener)
         btnStartView!!.setOnClickListener(btnListener)
         btnStopView!!.setOnClickListener(btnListener)
-
-        initMediaCodec()
-        initMediaMuxer()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        releaseMedia()
     }
 
     private fun startRtspListener() {
         if(!isRtspListenerPlaying.get() && !isRtspViewPlaying.get()) {
             Log.i(LOG_TAG, "RTSP Listener Starting")
             isRtspListenerPlaying.set(true)
+
+            initMediaCodec()
+            initMediaMuxer()
 
             val rtspUrl = getRtspUrl()
             CoroutineScope(Dispatchers.IO).launch {
@@ -104,6 +99,7 @@ class MainActivity : AppCompatActivity() {
             isRtspListenerPlaying.set(false)
 
             NetUtils.closeSocket(rtspSocket)
+            releaseMedia()
             Log.i(LOG_TAG, "RTSP Listener Stopped")
         }
     }
@@ -181,15 +177,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun releaseMedia() {
         Log.i(LOG_TAG, "Closing Media Codec/Muxer")
-        mediaCodec!!.signalEndOfInputStream()
 
         mediaCodec!!.stop()
         mediaCodec!!.release()
+        mediaCodec = null
 
         if(isMuxerStarted) {
             mediaMuxer!!.stop()
             mediaMuxer!!.release()
         }
+        mediaMuxer = null
+        videoTrackIndex = -1
         Log.i(LOG_TAG, "Closed Media Codec/Muxer")
     }
 
