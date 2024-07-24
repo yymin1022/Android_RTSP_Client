@@ -1,5 +1,8 @@
 package com.yong.rtspclient
 
+import android.media.MediaCodec
+import android.media.MediaFormat
+import android.media.MediaMuxer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +19,7 @@ import com.alexvas.utils.NetUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,6 +35,13 @@ class MainActivity : AppCompatActivity() {
     private var rtspSocket: Socket? = null
     private var rtspView: RtspSurfaceView? = null
 
+    private var mediaCodec: MediaCodec? = null
+    private var mediaMuxer: MediaMuxer? = null
+    private val videoBufferInfo = MediaCodec.BufferInfo()
+    private var videoOutputPath: String = ""
+    private var videoTrackIndex = -1
+
+    private var isMuxerStarted = false
     private var isRtspListenerPlaying = AtomicBoolean(false)
     private var isRtspViewPlaying = AtomicBoolean(false)
 
@@ -55,6 +66,15 @@ class MainActivity : AppCompatActivity() {
         btnStopListener!!.setOnClickListener(btnListener)
         btnStartView!!.setOnClickListener(btnListener)
         btnStopView!!.setOnClickListener(btnListener)
+
+        initMediaCodec()
+        initMediaMuxer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        releaseMedia()
     }
 
     private fun startRtspListener() {
@@ -111,6 +131,38 @@ class MainActivity : AppCompatActivity() {
             rtspView!!.stop()
             Log.i(LOG_TAG, "RTSP View Stopped")
         }
+    }
+
+    private fun initMediaCodec() {
+        Log.i(LOG_TAG, "Initializing Media Codec")
+        val mediaFormat = MediaFormat.createVideoFormat("video/avc", 1280, 720)
+        mediaCodec = MediaCodec.createDecoderByType("video/avc")
+        mediaCodec!!.configure(mediaFormat, null, null, 0)
+        mediaCodec!!.start()
+        Log.i(LOG_TAG, "Initialized Media Codec")
+    }
+
+    private fun initMediaMuxer() {
+        Log.i(LOG_TAG, "Initializing Media Muxer")
+        try {
+            videoOutputPath = "${applicationContext.filesDir.absolutePath}/output.mp4"
+            mediaMuxer = MediaMuxer(videoOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        } catch(e: IOException) {
+            Log.e(LOG_TAG, "Error Initializing Muxer: $e")
+        }
+        Log.i(LOG_TAG, "Initialized Media Muxer")
+    }
+
+    private fun releaseMedia() {
+        Log.i(LOG_TAG, "Closing Media Codec/Muxer")
+        mediaCodec!!.stop()
+        mediaCodec!!.release()
+
+        if(isMuxerStarted) {
+            mediaMuxer!!.stop()
+            mediaMuxer!!.release()
+        }
+        Log.i(LOG_TAG, "Closed Media Codec/Muxer")
     }
 
     private fun getRtspUrl(): String {
