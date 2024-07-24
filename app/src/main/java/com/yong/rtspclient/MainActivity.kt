@@ -134,8 +134,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initMediaCodec() {
         Log.i(LOG_TAG, "Initializing Media Codec")
-        val mediaFormat = MediaFormat.createVideoFormat("video/avc", 1280, 720)
-        mediaCodec = MediaCodec.createDecoderByType("video/avc")
+        val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 480, 480)
+        mediaCodec = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
         mediaCodec!!.configure(mediaFormat, null, null, 0)
         mediaCodec!!.start()
         Log.i(LOG_TAG, "Initialized Media Codec")
