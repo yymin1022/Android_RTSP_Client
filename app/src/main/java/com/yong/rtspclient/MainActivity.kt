@@ -261,6 +261,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun uploadBufferAsRTSP(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
+
+    }
+
     inner class RtspClientListener: RtspClient.RtspClientListener {
         override fun onRtspConnecting() {
             Log.i(LOG_TAG, "RTSP Connecting")
@@ -274,6 +278,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(LOG_TAG, "RTSP Video Nal Received: ${data.contentToString()}")
 
             saveBufferAsFile(data, offset, length, timestamp)
+            uploadBufferAsRTSP(data, offset, length, timestamp)
         }
 
         override fun onRtspAudioSampleReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
