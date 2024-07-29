@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private var rtspView: RtspSurfaceView? = null
 
     private var rtspServerAddress = "192.168.36.112"
-    private var rtspServerPort = 8900
+    private var rtspServerPort = 8554
     private val rtspUploadChunkSize = 55500 - 12
     private var rtspUploadSequenceNum = 0
     private var rtspUploadTimestamp = 0L
