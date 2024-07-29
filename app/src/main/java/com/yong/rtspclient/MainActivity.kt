@@ -214,6 +214,53 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun saveBufferAsFile(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
+        val inputBufferIndex = mediaCodec!!.dequeueInputBuffer(10000)
+        if(inputBufferIndex >= 0) {
+            val inputBuffer = mediaCodec!!.getInputBuffer(inputBufferIndex)
+            inputBuffer?.clear()
+            inputBuffer?.put(data, offset, length)
+            mediaCodec!!.queueInputBuffer(inputBufferIndex, 0, length, timestamp, 0)
+        }
+
+        var outputBufferIndex = mediaCodec!!.dequeueOutputBuffer(videoBufferInfo, 10000)
+        while(outputBufferIndex >= 0) {
+            val outputBuffer = mediaCodec!!.getOutputBuffer(outputBufferIndex)
+
+            if(videoBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
+                videoBufferInfo.size = 0
+            }
+
+            if(videoBufferInfo.size != 0) {
+                if(!isMuxerStarted) {
+                    val mediaFormat = mediaCodec!!.outputFormat
+                    Log.i(LOG_TAG, "Media Codec Format: $mediaFormat")
+
+                    try {
+                        videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
+                        mediaMuxer!!.start()
+                        isMuxerStarted = true
+                        Log.i(LOG_TAG, "Media Muxer Started")
+                    } catch(e: IllegalArgumentException) {
+                        Log.e(LOG_TAG, "Invalid Media Format [$mediaFormat]: $e")
+                    } catch(e: IllegalStateException) {
+                        Log.e(LOG_TAG, "Media Muxer is invalid: $e")
+                    }
+                }
+
+                outputBuffer?.position(videoBufferInfo.offset)
+                outputBuffer?.limit(videoBufferInfo.offset + videoBufferInfo.size)
+
+                if(outputBuffer != null) {
+                    mediaMuxer!!.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo)
+                }
+            }
+
+            mediaCodec!!.releaseOutputBuffer(outputBufferIndex, false)
+            outputBufferIndex = mediaCodec!!.dequeueOutputBuffer(videoBufferInfo, 0)
+        }
+    }
+
     inner class RtspClientListener: RtspClient.RtspClientListener {
         override fun onRtspConnecting() {
             Log.i(LOG_TAG, "RTSP Connecting")
@@ -226,50 +273,7 @@ class MainActivity : AppCompatActivity() {
         override fun onRtspVideoNalUnitReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
             Log.i(LOG_TAG, "RTSP Video Nal Received: ${data.contentToString()}")
 
-            val inputBufferIndex = mediaCodec!!.dequeueInputBuffer(10000)
-            if(inputBufferIndex >= 0) {
-                val inputBuffer = mediaCodec!!.getInputBuffer(inputBufferIndex)
-                inputBuffer?.clear()
-                inputBuffer?.put(data, offset, length)
-                mediaCodec!!.queueInputBuffer(inputBufferIndex, 0, length, timestamp, 0)
-            }
-
-            var outputBufferIndex = mediaCodec!!.dequeueOutputBuffer(videoBufferInfo, 10000)
-            while(outputBufferIndex >= 0) {
-                val outputBuffer = mediaCodec!!.getOutputBuffer(outputBufferIndex)
-
-                if(videoBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
-                    videoBufferInfo.size = 0
-                }
-
-                if(videoBufferInfo.size != 0) {
-                    if(!isMuxerStarted) {
-                        val mediaFormat = mediaCodec!!.outputFormat
-                        Log.i(LOG_TAG, "Media Codec Format: $mediaFormat")
-
-                        try {
-                            videoTrackIndex = mediaMuxer!!.addTrack(mediaFormat)
-                            mediaMuxer!!.start()
-                            isMuxerStarted = true
-                            Log.i(LOG_TAG, "Media Muxer Started")
-                        } catch(e: IllegalArgumentException) {
-                            Log.e(LOG_TAG, "Invalid Media Format [$mediaFormat]: $e")
-                        } catch(e: IllegalStateException) {
-                            Log.e(LOG_TAG, "Media Muxer is invalid: $e")
-                        }
-                    }
-
-                    outputBuffer?.position(videoBufferInfo.offset)
-                    outputBuffer?.limit(videoBufferInfo.offset + videoBufferInfo.size)
-
-                    if(outputBuffer != null) {
-                        mediaMuxer!!.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo)
-                    }
-                }
-
-                mediaCodec!!.releaseOutputBuffer(outputBufferIndex, false)
-                outputBufferIndex = mediaCodec!!.dequeueOutputBuffer(videoBufferInfo, 0)
-            }
+            saveBufferAsFile(data, offset, length, timestamp)
         }
 
         override fun onRtspAudioSampleReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
