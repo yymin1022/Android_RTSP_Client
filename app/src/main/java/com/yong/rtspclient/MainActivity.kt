@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity() {
     private var rtspSocket: Socket? = null
     private var rtspView: RtspSurfaceView? = null
 
+    private var rtspUploadSequenceNum = 0
+
     private var mediaCodec: MediaCodec? = null
     private var mediaMuxer: MediaMuxer? = null
     private val videoBufferInfo = MediaCodec.BufferInfo()
@@ -262,7 +264,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun uploadBufferAsRTSP(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
-
+        val rtspHeader = RTPHeader(96, sequenceNumber = rtspUploadSequenceNum, timestamp = timestamp, 12345678).getBytes()
+        val rtspPacket = rtspHeader + data
+        
+        rtspUploadSequenceNum++
     }
 
     inner class RtspClientListener: RtspClient.RtspClientListener {
