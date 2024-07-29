@@ -22,6 +22,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -37,7 +40,11 @@ class MainActivity : AppCompatActivity() {
     private var rtspSocket: Socket? = null
     private var rtspView: RtspSurfaceView? = null
 
+    private var rtspServerAddress = "192.168.36.112"
+    private var rtspServerPort = 8900
+    private val rtspUploadChunkSize = 55500 - 12
     private var rtspUploadSequenceNum = 0
+    private var rtspUploadTimestamp = 0L
 
     private var mediaCodec: MediaCodec? = null
     private var mediaMuxer: MediaMuxer? = null
@@ -264,10 +271,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun uploadBufferAsRTSP(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
-        val rtspHeader = RTPHeader(96, sequenceNumber = rtspUploadSequenceNum, timestamp = timestamp, 12345678).getBytes()
-        val rtspPacket = rtspHeader + data
-        
-        rtspUploadSequenceNum++
+        val rtspChunkCount = data.size / rtspUploadChunkSize + if (data.size % rtspUploadChunkSize > 0) 1 else 0
+
+        DatagramSocket().use { socket ->
+            val serverAddress = InetAddress.getByName(rtspServerAddress)
+
+            for(i in 0 until rtspChunkCount) {
+                val idxFrom = i * rtspUploadChunkSize
+                val idxTo = minOf((i + 1) * rtspUploadChunkSize, data.size)
+                val rtpChunk = data.sliceArray(idxFrom until idxTo)
+                val rtpHeader = RTPHeader(96, sequenceNumber = rtspUploadSequenceNum, timestamp = rtspUploadTimestamp, 12345678).getBytes()
+
+                val rtpPacket = rtpHeader + rtpChunk
+                val sendPacket = DatagramPacket(rtpPacket, rtpPacket.size, serverAddress, rtspServerPort)
+                socket.send(sendPacket)
+
+                rtspUploadSequenceNum++
+                rtspUploadTimestamp += 3000L
+            }
+        }
+
     }
 
     inner class RtspClientListener: RtspClient.RtspClientListener {
