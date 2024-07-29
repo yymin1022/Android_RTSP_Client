@@ -224,7 +224,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onRtspVideoNalUnitReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
-            Log.i(LOG_TAG, "RTSP Video Nal Received")
+            Log.i(LOG_TAG, "RTSP Video Nal Received: ${data.contentToString()}")
 
             val inputBufferIndex = mediaCodec!!.dequeueInputBuffer(10000)
             if(inputBufferIndex >= 0) {
