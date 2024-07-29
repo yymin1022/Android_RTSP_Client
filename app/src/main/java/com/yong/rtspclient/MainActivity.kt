@@ -270,7 +270,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadBufferAsRTSP(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
+    private fun uploadBufferAsRTSP(data: ByteArray) {
         val rtspChunkCount = data.size / rtspUploadChunkSize + if (data.size % rtspUploadChunkSize > 0) 1 else 0
 
         DatagramSocket().use { socket ->
@@ -306,7 +306,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(LOG_TAG, "RTSP Video Nal Received: ${data.contentToString()}")
 
             saveBufferAsFile(data, offset, length, timestamp)
-            uploadBufferAsRTSP(data, offset, length, timestamp)
+            uploadBufferAsRTSP(data)
         }
 
         override fun onRtspAudioSampleReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
