@@ -23,10 +23,32 @@
             android:id="@+id/main_input_rtsp"
             android:hint="RTSP Source URL/Port"
             android:inputType="textUri"
-            app:layout_constraintBottom_toTopOf="@id/main_btn_start_view"
+            app:layout_constraintBottom_toTopOf="@id/main_input_server_ip"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/main_input_server_ip"
+            android:hint="Receive Server IP"
+            android:inputType="textUri"
+            app:layout_constraintBottom_toTopOf="@id/main_input_server_port"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/main_input_rtsp" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/main_input_server_port"
+            android:hint="Receive Server Port"
+            android:inputType="numberDecimal"
+            app:layout_constraintBottom_toTopOf="@id/main_btn_start_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/main_input_server_ip" />
 
         <Button
             android:layout_width="wrap_content"
