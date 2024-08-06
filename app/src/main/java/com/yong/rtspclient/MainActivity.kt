@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
     private var btnStopListener: Button? = null
     private var btnStartView: Button? = null
     private var btnStopView: Button? = null
+    private var inputReceiveIP: EditText? = null
+    private var inputReceivePort: EditText? = null
     private var rtspInput: EditText? = null
     private var rtspClient: RtspClient? = null
     private var rtspSocket: Socket? = null
@@ -70,6 +72,8 @@ class MainActivity : AppCompatActivity() {
         btnStopListener = findViewById(R.id.main_btn_stop_listener)
         btnStartView = findViewById(R.id.main_btn_start_view)
         btnStopView = findViewById(R.id.main_btn_stop_view)
+        inputReceiveIP = findViewById(R.id.main_input_server_ip)
+        inputReceivePort = findViewById(R.id.main_input_server_port)
         rtspInput = findViewById(R.id.main_input_rtsp)
         rtspView = findViewById(R.id.main_surface_rtsp)
 
@@ -99,6 +103,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             Log.i(LOG_TAG, "RTSP Listener Started from $rtspUrl")
+            Log.i(LOG_TAG, "Upload Packet to $rtspServerAddress:$rtspServerPort")
         }
     }
 
@@ -210,6 +215,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getRtspUrl(): String {
+        try {
+            val serverIP = inputReceiveIP!!.text.toString()
+            val serverPort = inputReceivePort!!.text.toString().toInt()
+
+            rtspServerAddress = serverIP
+            rtspServerPort = serverPort
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error Input : ${e}")
+        }
+
+
         val inputUrl = rtspInput!!.text.toString()
         return inputUrl
     }
